@@ -2,7 +2,10 @@
   "name": "vef2-2021-h1",
   "version": "1.0.0",
   "description": "Útfæra skal vefþjónustur fyrir sjónvarpsþáttavef:",
-  "main": "index.js",
+  "main": "./src/app.js",
+  "engines": {
+    "node": ">= 14"
+  },
   "scripts": {
     "dev": "nodemon ./src/app.js",
     "test": "eslint ./src",

@@ -32,3 +32,16 @@ export async function query(text, params) {
     client.release();
   }
 }
+/**
+ * query With No Parameters.
+ * 
+ */
+export async function queryWNP(text) {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(text);
+    return result;
+  } finally {
+    client.release();
+  }
+}

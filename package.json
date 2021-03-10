@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Útfæra skal vefþjónustur fyrir sjónvarpsþáttavef:",
   "main": "./src/app.js",
-  "type": "module",
   "engines": {
     "node": ">= 14"
   },

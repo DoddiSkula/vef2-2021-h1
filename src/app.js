@@ -4,7 +4,6 @@ import { promisify } from 'util';
 import { readFile } from 'fs';
 import express from 'express';
 import dotenv from 'dotenv';
-// import session from 'express-session';
 // import { router as tvRouter } from './tv.js';
 // import { router as userRouter } from './users.js';
 
@@ -18,6 +17,8 @@ const path = dirname(fileURLToPath(import.meta.url));
 const readFileAsync = promisify(readFile);
 
 const app = express();
+
+app.use(express.json());
 
 // app.use('/tv', tvRouter);
 // app.use('/users', userRouter);

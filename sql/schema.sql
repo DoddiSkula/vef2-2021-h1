@@ -1,4 +1,3 @@
-
 DROP TABLE IF EXISTS shows CASCADE;
 
 CREATE TABLE IF NOT EXISTS shows (
@@ -8,7 +7,7 @@ CREATE TABLE IF NOT EXISTS shows (
   inproduction boolean,
   tagline varchar(128),
   image text,
-  show_description varchar(256),
+  show_description varchar(65536),
   show_language varchar(128),
   network varchar(128),
   webpage varchar(128)

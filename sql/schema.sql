@@ -84,4 +84,8 @@ CREATE TABLE IF NOT EXISTS info  (
   rating integer,
   constraint show_id foreign key (show_id) REFERENCES shows(id),
   constraint user_id foreign key (user_id) REFERENCES users(id)
+<<<<<<< HEAD
 );
+=======
+);
+>>>>>>> 019748f90ee2ab8f9cf88aa0d026955a366f1613

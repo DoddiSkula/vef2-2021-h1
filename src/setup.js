@@ -5,8 +5,12 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import csv from 'csv-parser'
 
+<<<<<<< HEAD
 const path = dirname(fileURLToPath(import.meta.url));
 const schemaFile = join(path, '../sql/schema.sql');
+=======
+const schemaFile = './sql/schema.sql'; // þurfti að breytar úr ../sql/ í ./sql/ til að virki hjá mér!
+>>>>>>> 019748f90ee2ab8f9cf88aa0d026955a366f1613
 
 async function create() {
   const data = await promises.readFile(schemaFile);

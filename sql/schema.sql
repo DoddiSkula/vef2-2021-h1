@@ -1,5 +1,5 @@
 
-DROP TABLE IF EXISTS shows;
+DROP TABLE IF EXISTS shows CASCADE;
 
 CREATE TABLE IF NOT EXISTS shows (
   id serial primary key,
@@ -14,14 +14,14 @@ CREATE TABLE IF NOT EXISTS shows (
   webpage varchar(128)
 );
 
-DROP TABLE IF EXISTS genre;
+DROP TABLE IF EXISTS genre CASCADE;
 
 CREATE TABLE IF NOT EXISTS genre (
   id serial primary key,
   genre_name varchar(64)
 );
 
-DROP TABLE IF EXISTS show_genre;
+DROP TABLE IF EXISTS show_genre CASCADE;
 
 CREATE TABLE IF NOT EXISTS show_genre (
   id serial primary key,
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS show_genre (
 );
 
 
-DROP TABLE IF EXISTS season;
+DROP TABLE IF EXISTS season CASCADE;
 
 CREATE TABLE IF NOT EXISTS season (
   id serial primary key,
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS season (
   constraint nr_biggerthanzero check (nr > 0)
 );
 
-DROP TABLE IF EXISTS episode;
+DROP TABLE IF EXISTS episode CASCADE;
 
 CREATE TABLE IF NOT EXISTS episode (
   id serial primary key,
@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS episode (
   constraint nr_biggerthanzero check (nr > 0)
 );
 
-DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS users CASCADE;
 
 CREATE TABLE IF NOT EXISTS users (
   id serial primary key,
@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- Lykilorð: "123"
 INSERT INTO users (username, email, password, admin) VALUES ('vef2', 'vef2@mail.com', '$2a$11$pgj3.zySyFOvIQEpD7W6Aund1Tw.BFarXxgLJxLbrzIv/4Nteisii', TRUE);
 
-DROP TABLE IF EXISTS info;
+DROP TABLE IF EXISTS info CASCADE;
 
 CREATE TABLE IF NOT EXISTS info  (
   id serial primary key,

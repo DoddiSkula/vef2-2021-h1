@@ -1,6 +1,3 @@
-// Passport virkni
-// Passport strategy, jwt
-
 import passport from 'passport';
 import dotenv from 'dotenv';
 import { Strategy, ExtractJwt } from 'passport-jwt';
@@ -18,9 +15,10 @@ if (!jwtSecret || !databaseUrl) {
   process.exit(1);
 }
 
-const jwtOptions = {
+export const jwtOptions = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
   secretOrKey: jwtSecret,
+  usernameField: 'email',
 };
 
 async function strat(data, next) {

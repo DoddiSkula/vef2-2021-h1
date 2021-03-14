@@ -1,4 +1,3 @@
-
 DROP TABLE IF EXISTS shows;
 
 CREATE TABLE IF NOT EXISTS shows (
@@ -7,6 +6,7 @@ CREATE TABLE IF NOT EXISTS shows (
   show_aired date,
   inproduction boolean,
   tagline varchar(128),
+  image text,
   show_description varchar(65536),
   show_language varchar(128),
   network varchar(128),
@@ -17,7 +17,7 @@ DROP TABLE IF EXISTS genre;
 
 CREATE TABLE IF NOT EXISTS genre (
   id serial primary key,
-  genre_name varchar (64)
+  genre_name varchar(64)
 );
 
 DROP TABLE IF EXISTS show_genre;
@@ -25,9 +25,9 @@ DROP TABLE IF EXISTS show_genre;
 CREATE TABLE IF NOT EXISTS show_genre (
   id serial primary key,
   show_id bigint,
-  genre integer,
+  genre_id bigint,
   constraint show_id foreign key (show_id) REFERENCES shows(id),
-  constraint genre foreign key (genre) REFERENCES genre(id)
+  constraint genre_id foreign key (genre_id) REFERENCES genre(id)
 );
 
 
@@ -40,8 +40,8 @@ CREATE TABLE IF NOT EXISTS season (
   season_aired date,
   season_description varchar(256),
   poster text not null,
-  show integer not null,
-  constraint show foreign key (show) REFERENCES shows(id),
+  show_id bigint,
+  constraint show_id foreign key (show_id) REFERENCES shows(id),
   constraint nr_biggerthanzero check (nr > 0)
 );
 
@@ -53,8 +53,11 @@ CREATE TABLE IF NOT EXISTS episode (
   nr integer,
   episode_aired date,
   episode_description varchar(256),
-  season integer not null,
-  constraint season foreign key (season) REFERENCES season(id),
+  show_id bigint,
+  season_nr integer,
+  season_id bigint not null,
+  constraint season_id foreign key (season_id) REFERENCES season(id),
+  constraint show_id foreign key (show_id) REFERENCES shows(id),
   constraint nr_biggerthanzero check (nr > 0)
 );
 
@@ -63,21 +66,22 @@ DROP TABLE IF EXISTS users;
 CREATE TABLE IF NOT EXISTS users (
   id serial primary key,
   username character varying(255) NOT NULL unique,
+  email varchar(70) NOT NULL unique,
   password character varying(255) NOT NULL,
-  admin boolean
+  admin boolean default false
 );
 
 -- Lykilorð: "123"
-INSERT INTO users (username, password, admin) VALUES ('vef2', '$2a$11$pgj3.zySyFOvIQEpD7W6Aund1Tw.BFarXxgLJxLbrzIv/4Nteisii', TRUE);
+INSERT INTO users (username, email, password, admin) VALUES ('vef2', 'vef2@mail.com', '$2a$11$pgj3.zySyFOvIQEpD7W6Aund1Tw.BFarXxgLJxLbrzIv/4Nteisii', TRUE);
 
 DROP TABLE IF EXISTS info;
 
 CREATE TABLE IF NOT EXISTS info  (
   id serial primary key,
-  show integer not null,
-  usr integer not null,
+  show_id bigint not null,
+  user_id bigint not null,
   watch_state varchar(48),
   rating integer,
-  constraint show foreign key (show) REFERENCES shows(id),
-  constraint usr foreign key (usr) REFERENCES users(id)
+  constraint show_id foreign key (show_id) REFERENCES shows(id),
+  constraint user_id foreign key (user_id) REFERENCES users(id)
 );

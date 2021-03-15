@@ -1,5 +1,3 @@
-// leita af user, búa til user, breyta user, compare passwords (bcrypt)
-
 import bcrypt from 'bcrypt';
 import { query } from './db.js';
 
@@ -57,7 +55,7 @@ export async function findById(id) {
   return null;
 }
 
-export async function createUser(username, password, email, admin = false) {
+export async function createUser(username, email, password, admin = false) {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const q = `

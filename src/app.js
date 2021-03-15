@@ -4,8 +4,9 @@ import { promisify } from 'util';
 import { readFile } from 'fs';
 import express from 'express';
 import dotenv from 'dotenv';
+import passport from './login.js';
 // import { router as tvRouter } from './tv.js';
-// import { router as userRouter } from './users.js';
+import { router as userRouter } from './users.js';
 
 dotenv.config();
 
@@ -19,9 +20,11 @@ const readFileAsync = promisify(readFile);
 const app = express();
 
 app.use(express.json());
+app.use(express.urlencoded());
+app.use(passport.initialize());
 
 // app.use('/tv', tvRouter);
-// app.use('/users', userRouter);
+app.use('/', userRouter);
 
 // Birtir listi.json á '/'
 app.get('/', async (req, res) => {

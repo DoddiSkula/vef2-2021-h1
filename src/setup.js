@@ -13,7 +13,6 @@ async function create() {
   const data = await promises.readFile(schemaFile);
   await queryWNP(data.toString('utf-8'));
 }
-
 async function insert(){
 
   /* INSERT series.csv into shows */
@@ -39,40 +38,72 @@ async function insert(){
   fs.createReadStream(join(path, '../data/episodes.csv'))
   .pipe( csv())
   .on( 'data', async (row) => {
-    if(row.airDate === "") row.airDate = null;
+    if(row.airDate == "") row.airDate = null;
     await query(`INSERT INTO episode (episode_name, nr, episode_aired, episode_description, season_id, show_id)
-    VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    VALUES ($1, $2, $3, $4, $5, $6)`,
     [row.name, row.number, row.airDate, row.overview, row.season, row.serieId]);
   });
 
 }
-/* Populates table genre */
-let gen = [];
+
+/* Populates genre table */
 async function genre(){
+  let gen = [];
   fs.createReadStream(join(path, '../data/series.csv'))
   .pipe( csv())
   .on( 'data', (row) => {
     let x = row.genres.split(',');
-    for(let i = 0; i < x.length; i++){
-      gen.push(x[i]);
+    for(let i in x){
+      if(!gen.includes(x[i]))
+        gen.push(x[i]);
     }
+  })
+  .on('end', () => {
+    for(let x in gen){
+      query(`INSERT INTO genre (genre_name) VALUES ($1)`, [gen[x]]);
+    }
+  });
+}
+
+/* TODO */
+/* Populates show_genre table */
+async function show_genre(){
+  const genres = await queryWNP(`SELECT * FROM genre`);
+  const series = await queryWNP(`SELECT id, show_name FROM shows`);
+  fs.createReadStream(join(path, '../data/series.csv'))
+  .pipe( csv())
+  .on( 'data', async (row) => {
+    for(let x in series.rows){
+      if (series.rows[x].show_name == row.name){
+        for(let y in genres.rows){
+          if (genres.rows[y].genre_name.includes(row.genres.split(','))){            
+            await query(`INSERT INTO show_genre (show_id, genre_id) VALUES ($1,$2)`, [series.rows[x].id, genres.rows[y].id]);
+          }
+        }
+        
+      }
+    }
+  })
+  .on('end', () => {
+    
   });
   
 }
 
-await genre().then(()=>{
-  console.log(gen);
+await create().catch((err) => {
+  console.error('Error creating schema', err);
 });
 
-/*await create().catch((err) => {
+await genre().catch((err) => {
   console.error('Error creating schema', err);
 });
 
 await insert().catch((err) => {
   console.error('Error creating schema', err);
 });
-await genre().catch((err) => {
+
+await show_genre().catch((err) => {
   console.error('Error creating schema', err);
 });
-*/
+
 

@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS episode (
   episode_name varchar(128) not null,
   nr integer,
   episode_aired date,
-  episode_description varchar(256),
+  episode_description varchar(65536),
   season_id bigint not null,
   show_id bigint,  
   constraint season_id foreign key (season_id) REFERENCES season(id),

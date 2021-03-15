@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS season (
   season_name varchar(128) not null,
   nr integer,
   season_aired date,
-  season_description varchar(256),
+  season_description varchar(65536),
   poster text not null,
   show_id bigint,
   constraint show_id foreign key (show_id) REFERENCES shows(id),
@@ -53,9 +53,8 @@ CREATE TABLE IF NOT EXISTS episode (
   nr integer,
   episode_aired date,
   episode_description varchar(256),
-  show_id bigint,
-  season_nr integer,
   season_id bigint not null,
+  show_id bigint,  
   constraint season_id foreign key (season_id) REFERENCES season(id),
   constraint show_id foreign key (show_id) REFERENCES shows(id),
   constraint nr_biggerthanzero check (nr > 0)
@@ -84,8 +83,4 @@ CREATE TABLE IF NOT EXISTS info  (
   rating integer,
   constraint show_id foreign key (show_id) REFERENCES shows(id),
   constraint user_id foreign key (user_id) REFERENCES users(id)
-<<<<<<< HEAD
 );
-=======
-);
->>>>>>> 019748f90ee2ab8f9cf88aa0d026955a366f1613

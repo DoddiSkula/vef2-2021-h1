@@ -34,7 +34,7 @@ export async function query(text, params) {
 }
 /**
  * query With No Parameters.
- * 
+ *
  */
 export async function queryWNP(text) {
   const client = await pool.connect();

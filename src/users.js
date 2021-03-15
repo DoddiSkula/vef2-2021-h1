@@ -6,6 +6,7 @@ import { jwtOptions } from './login.js';
 import {
   comparePasswords, createUser, findByEmail, findByUsername,
 } from './user.js';
+import { isNotEmptyString, validateEmail } from './utils.js';
 
 dotenv.config();
 
@@ -19,6 +20,10 @@ const {
 
 router.post('/users/login', async (req, res) => {
   const { email, password } = req.body;
+
+  if (!isNotEmptyString(email) || !isNotEmptyString(password)) {
+    return res.status(400).json({ error: 'Email or password cannot be empty.' });
+  }
 
   const user = await findByEmail(email);
   if (!user) {
@@ -39,6 +44,32 @@ router.post('/users/login', async (req, res) => {
 
 router.post('/users/register', async (req, res) => {
   const { username, email, password } = req.body;
+  const errors = [];
+
+  if (!isNotEmptyString(username, { min: 3, max: 32 })) {
+    errors.push({
+      field: 'username',
+      error: 'Username must be at least 3 characters and at most 32 characters.',
+    });
+  }
+
+  if (!isNotEmptyString(password, { min: 8 })) {
+    errors.push({
+      field: 'password',
+      error: 'Password must be at least 8 characters.',
+    });
+  }
+
+  if (!isNotEmptyString(email) || !validateEmail(email)) {
+    errors.push({
+      field: 'email',
+      erros: 'Invalid email address.',
+    });
+  }
+
+  if (errors.length > 0) {
+    return res.status(400).json(errors);
+  }
 
   const usernameExists = await findByUsername(username);
   if (usernameExists) {
@@ -50,7 +81,12 @@ router.post('/users/register', async (req, res) => {
     return res.status(400).json({ error: 'Email exists' });
   }
 
-  const result = await createUser(username, email, password);
+  let result;
+  try {
+    result = await createUser(username, email, password);
+  } catch (e) {
+    console.error(e);
+  }
 
   return res.status(201).json(result);
 });

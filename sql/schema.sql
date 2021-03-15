@@ -70,8 +70,8 @@ CREATE TABLE IF NOT EXISTS users (
   admin boolean default false
 );
 
--- Lykilorð: "123"
-INSERT INTO users (username, email, password, admin) VALUES ('vef2', 'vef2@mail.com', '$2a$11$pgj3.zySyFOvIQEpD7W6Aund1Tw.BFarXxgLJxLbrzIv/4Nteisii', TRUE);
+-- Lykilorð: "12345678"
+INSERT INTO users (username, email, password, admin) VALUES ('admin', 'admin@admin.com', '$2b$10$Koyb5tsdW0S8yApyH12fku884z9M4kNQcxn3Uep/ueDXNVLfwYCaq', TRUE);
 
 DROP TABLE IF EXISTS info CASCADE;
 

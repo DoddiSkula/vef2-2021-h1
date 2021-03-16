@@ -24,7 +24,7 @@ app.use(express.urlencoded());
 app.use(passport.initialize());
 
 // app.use('/tv', tvRouter);
-app.use('/', userRouter);
+app.use(userRouter);
 
 // Birtir listi.json á '/'
 app.get('/', async (req, res) => {

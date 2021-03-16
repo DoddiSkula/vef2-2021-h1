@@ -71,7 +71,9 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- Lykilorð: "12345678"
-INSERT INTO users (username, email, password, admin) VALUES ('admin', 'admin@admin.com', '$2b$10$Koyb5tsdW0S8yApyH12fku884z9M4kNQcxn3Uep/ueDXNVLfwYCaq', TRUE);
+INSERT INTO users (username, email, password, admin) VALUES ('admin', 'admin@admin.is', '$2b$10$Koyb5tsdW0S8yApyH12fku884z9M4kNQcxn3Uep/ueDXNVLfwYCaq', TRUE);
+-- Lykilorð: "12345678"
+INSERT INTO users (username, email, password, admin) VALUES ('notandi', 'notandi@notandi.is', '$2b$10$Koyb5tsdW0S8yApyH12fku884z9M4kNQcxn3Uep/ueDXNVLfwYCaq', FALSE);
 
 DROP TABLE IF EXISTS info CASCADE;
 

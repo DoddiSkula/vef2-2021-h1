@@ -55,6 +55,13 @@ export async function findById(id) {
   return null;
 }
 
+// TODO: útfæra paging
+export async function getUsers(req, res) {
+  const q = 'SELECT id, username, email, admin FROM users';
+  const results = await query(q);
+  return res.json(results.rows);
+}
+
 export async function createUser(username, email, password, admin = false) {
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -63,7 +70,7 @@ export async function createUser(username, email, password, admin = false) {
         users (username, email, password, admin)
       VALUES
         ($1, $2, $3, $4)
-      RETURNING username, email`;
+      RETURNING id, username, email, admin`;
 
   const values = [username, email, hashedPassword, admin];
   const result = await query(q, values);
@@ -89,11 +96,19 @@ export async function updateUser(id, email, password) {
     SET ${updates.join(', ')}
   WHERE
     id = $1
-  RETURNING username, email`;
+  RETURNING id, username, email, admin`;
 
   const result = await query(q, [id]);
 
   return result.rows[0];
+}
+
+export function checkUserIsAdmin(req, res, next) {
+  if (req.user && req.user.admin) {
+    return next();
+  }
+
+  return res.status(403).json({ error: 'Forbidden' });
 }
 
 export async function comparePasswords(password, hash) {

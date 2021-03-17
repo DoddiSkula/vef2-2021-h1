@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS shows CASCADE;
 
 CREATE TABLE IF NOT EXISTS shows (
-  id serial primary key,
+  id integer,
   show_name varchar(128) not null,
   show_aired date,
   inproduction boolean,

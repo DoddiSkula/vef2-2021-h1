@@ -21,12 +21,10 @@ const readFileAsync = promisify(readFile);
 const app = express();
 
 app.use(express.json());
-app.use(express.urlencoded());
 app.use(passport.initialize());
 
 app.use(tvRouter);
 app.use(userRouter);
-
 
 // Birtir listi.json á '/'
 app.get('/', async (req, res) => {

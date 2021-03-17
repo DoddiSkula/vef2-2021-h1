@@ -62,6 +62,22 @@ export async function getUsers(req, res) {
   return res.json(results.rows);
 }
 
+export async function getUser(username) {
+  const q = 'SELECT username, email FROM users WHERE username = $1';
+  try {
+    const result = await query(q, [username]);
+
+    if (result.rowCount === 1) {
+      return result.rows[0];
+    }
+  } catch (e) {
+    console.error('Could not find user.');
+    return null;
+  }
+
+  return null;
+}
+
 export async function createUser(username, email, password, admin = false) {
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -84,11 +100,11 @@ export async function updateUser(id, email, password) {
   let hashedPassword = null;
   if (password) {
     hashedPassword = await bcrypt.hash(password, 10);
-    updates.push(`password=${hashedPassword}`);
+    updates.push(`password='${hashedPassword}'`);
   }
 
   if (email) {
-    updates.push(`email=${email}`);
+    updates.push(`email='${email}'`);
   }
 
   const q = `
@@ -96,10 +112,16 @@ export async function updateUser(id, email, password) {
     SET ${updates.join(', ')}
   WHERE
     id = $1
-  RETURNING id, username, email, admin`;
+  RETURNING username, email`;
 
   const result = await query(q, [id]);
 
+  return result.rows[0];
+}
+
+export async function updateUserStatus(isAdmin, id) {
+  const q = 'UPDATE users SET admin = $1 WHERE id = $2 RETURNING username, email, admin';
+  const result = await query(q, [isAdmin, id]);
   return result.rows[0];
 }
 

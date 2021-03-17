@@ -26,9 +26,9 @@ async function insert(){
   fs.createReadStream(join(path, '../data/series.csv'))
   .pipe( csv())
   .on( 'data', async (row) => {
-    await query(`INSERT INTO shows (id, show_name, show_aired, inproduction, tagline, image, show_description, show_language, network, webpage)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-    [row.id, row.name, row.airDate, row.inProduction, row.tagline, cloudinary.url(row.image), row.description, row.language, row.network, row.homepage]); 
+    await query(`INSERT INTO shows (show_name, show_aired, inproduction, tagline, image, show_description, show_language, network, webpage)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+    [row.name, row.airDate, row.inProduction, row.tagline, cloudinary.url(row.image), row.description, row.language, row.network, row.homepage]); 
   });
 
   /* INSERT seasons.csv into season */

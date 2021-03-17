@@ -2,8 +2,15 @@ import { promises } from 'fs';
 import { queryWNP, query } from './db.js';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import cloudinary from 'cloudinary';
 import fs from 'fs';
 import csv from 'csv-parser'
+
+cloudinary.config({ 
+  cloud_name: 'oscar6662', 
+  api_key: '643914147656538', 
+  api_secret: 't1Q4jzJPmSWUxr_TZDJjEy8twAE' 
+});
 
 const path = dirname(fileURLToPath(import.meta.url));
 const schemaFile = join(path, '../sql/schema.sql'); // Use npm run setup instead of locally node setup
@@ -19,9 +26,9 @@ async function insert(){
   fs.createReadStream(join(path, '../data/series.csv'))
   .pipe( csv())
   .on( 'data', async (row) => {
-    await query(`INSERT INTO shows (show_name, show_aired, inproduction, tagline, show_description, show_language, network, webpage)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-    [row.name, row.airDate, row.inProduction, row.tagline, row.description, row.language, row.network, row.homepage]); 
+    await query(`INSERT INTO shows (show_name, show_aired, inproduction, tagline, image, show_description, show_language, network, webpage)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+    [row.name, row.airDate, row.inProduction, row.tagline, cloudinary.url(row.image), row.description, row.language, row.network, row.homepage]); 
   });
 
   /* INSERT seasons.csv into season */
@@ -31,7 +38,7 @@ async function insert(){
     if(row.airDate === "") row.airDate = null;
     await query(`INSERT INTO season (season_name, nr, season_aired, season_description, poster, show_id)
     VALUES ($1, $2, $3, $4, $5, $6)`,
-    [row.name, row.number, row.airDate, row.overview, row.poster, row.serieId]);
+    [row.name, row.number, row.airDate, row.overview, cloudinary.url(row.poster), row.serieId]);
   });
 
   /* INSERT episodes.csv into episode */

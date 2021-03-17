@@ -5,7 +5,7 @@ import { readFile } from 'fs';
 import express from 'express';
 import dotenv from 'dotenv';
 import passport from './login.js';
-// import { router as tvRouter } from './tv.js';
+import { router as tvRouter } from './tv.js';
 import { router as userRouter } from './users.js';
 
 dotenv.config();
@@ -23,7 +23,7 @@ app.use(express.json());
 app.use(express.urlencoded());
 app.use(passport.initialize());
 
-// app.use('/tv', tvRouter);
+app.use(tvRouter);
 app.use(userRouter);
 
 // Birtir listi.json á '/'

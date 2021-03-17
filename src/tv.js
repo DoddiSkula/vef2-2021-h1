@@ -1,3 +1,4 @@
+import { roundToNearestMinutes } from "date-fns";
 import express from "express";
 import { query } from "./db.js";
 export const router = express.Router();
@@ -8,7 +9,7 @@ router.get("/tv", async (req, res) => {
   return res.json(results.rows);
 });
 
-router.get("/tv/:id", async (req, res) => {
+async function findShow(req, res) {
   const show = "SELECT show_name, show_description FROM shows WHERE id = $1";
   const showq = await query(show, [req.params.id]);
   const seasons =
@@ -16,7 +17,19 @@ router.get("/tv/:id", async (req, res) => {
   const seasonsq = await query(seasons, [req.params.id]);
 
   return res.json([showq.rows, seasonsq.rows]);
-});
+}
+// skoða betur0
+async function deleteShow(req, res) {
+  const q = "DELETE FROM shows WHERE id = $1";
+  try {
+    await query(q, [req.params.id]);
+    return res.status(204).json(`Þætti nr: ${req.params.id} var eytt`);
+  } catch (e) {
+    console.error("Could not find show or delete it.");
+  }
+}
+
+async function insertSeries(req, res) {}
 
 router.get("/tv/:id/season", async (req, res) => {
   const seasons =
@@ -43,3 +56,10 @@ router.get("/genres", async (req, res) => {
   const results = await query(q);
   return res.json(results.rows);
 });
+
+router.post("/tv/:id/season");
+
+router.get("/tv/:id", findShow);
+router.delete("/tv/:id", deleteShow);
+
+//router.patch("/tv/:id", updateShow);

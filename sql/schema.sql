@@ -1,8 +1,8 @@
 DROP TABLE IF EXISTS shows CASCADE;
 
 CREATE TABLE IF NOT EXISTS shows (
-  id serial primary key,
-  show_name varchar(128) not null,
+  id integer unique,
+  show_name varchar(128) not null unique,
   show_aired date,
   inproduction boolean,
   tagline varchar(128),
@@ -17,17 +17,15 @@ DROP TABLE IF EXISTS genre CASCADE;
 
 CREATE TABLE IF NOT EXISTS genre (
   id serial primary key,
-  genre_name varchar(64)
+  genre_name varchar(64) not null unique
 );
 
 DROP TABLE IF EXISTS show_genre CASCADE;
 
 CREATE TABLE IF NOT EXISTS show_genre (
   id serial primary key,
-  show_id bigint,
-  genre_id bigint,
-  constraint show_id foreign key (show_id) REFERENCES shows(id),
-  constraint genre_id foreign key (genre_id) REFERENCES genre(id)
+  show_name varchar(128) not null REFERENCES shows(show_name),
+  genre_name varchar(64) not null REFERENCES genre(genre_name)
 );
 
 
@@ -40,7 +38,7 @@ CREATE TABLE IF NOT EXISTS season (
   season_aired date,
   season_description varchar(65536),
   poster text not null,
-  show_id bigint,
+  show_id integer,
   constraint show_id foreign key (show_id) REFERENCES shows(id),
   constraint nr_biggerthanzero check (nr > 0)
 );
@@ -54,7 +52,7 @@ CREATE TABLE IF NOT EXISTS episode (
   episode_aired date,
   episode_description varchar(65536),
   season_id bigint not null,
-  show_id bigint,  
+  show_id integer,  
   constraint season_id foreign key (season_id) REFERENCES season(id),
   constraint show_id foreign key (show_id) REFERENCES shows(id),
   constraint nr_biggerthanzero check (nr > 0)

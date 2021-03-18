@@ -26,9 +26,9 @@ async function insert(){
   fs.createReadStream(join(path, '../data/series.csv'))
   .pipe( csv())
   .on( 'data', async (row) => {
-    await query(`INSERT INTO shows (show_name, show_aired, inproduction, tagline, image, show_description, show_language, network, webpage)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-    [row.name, row.airDate, row.inProduction, row.tagline, cloudinary.url(row.image), row.description, row.language, row.network, row.homepage]); 
+    await query(`INSERT INTO shows (id, show_name, show_aired, inproduction, tagline, image, show_description, show_language, network, webpage)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+    [row.id, row.name, row.airDate, row.inProduction, row.tagline, cloudinary.url(row.image), row.description, row.language, row.network, row.homepage]); 
   });
 
   /* INSERT seasons.csv into season */
@@ -45,7 +45,7 @@ async function insert(){
   fs.createReadStream(join(path, '../data/episodes.csv'))
   .pipe( csv())
   .on( 'data', async (row) => {
-    if(row.airDate == "") row.airDate = null;
+    if(row.airDate === "") row.airDate = null;
     await query(`INSERT INTO episode (episode_name, nr, episode_aired, episode_description, season_id, show_id)
     VALUES ($1, $2, $3, $4, $5, $6)`,
     [row.name, row.number, row.airDate, row.overview, row.season, row.serieId]);
@@ -72,7 +72,6 @@ async function genre(){
   });
 }
 
-/* TODO */
 /* Populates show_genre table */
 async function show_genre(){
   const genres = await queryWNP(`SELECT * FROM genre`);
@@ -80,14 +79,11 @@ async function show_genre(){
   fs.createReadStream(join(path, '../data/series.csv'))
   .pipe( csv())
   .on( 'data', async (row) => {
-    for(let x in series.rows){
-      if (series.rows[x].show_name == row.name){
-        for(let y in genres.rows){
-          if (genres.rows[y].genre_name.includes(row.genres.split(','))){            
-            await query(`INSERT INTO show_genre (show_id, genre_id) VALUES ($1,$2)`, [series.rows[x].id, genres.rows[y].id]);
-          }
-        }
-        
+    const g = row.genres.split(',')
+    for (let x in genres.rows){
+      
+      if (row.genres.includes(genres.rows[x].genre_name)){
+        await query(`INSERT INTO show_genre (show_name, genre_name) VALUES ($1,$2)`, [row.name, genres.rows[x].genre_name]);
       }
     }
   })

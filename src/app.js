@@ -5,7 +5,6 @@ import { readFile } from 'fs';
 import express from 'express';
 import dotenv from 'dotenv';
 import passport from './login.js';
-import cloudinary from 'cloudinary';
 import { router as tvRouter } from './tv.js';
 import { router as userRouter } from './users.js';
 

@@ -42,7 +42,7 @@ eða
 ## Hópur
 
 - [Fullt nafn], [HÍ email], kak25
-- [Fullt nafn], [HÍ email], oscar6662
+- Óskar Helgi Berenguer, ohb5@hi.is, [oscar6662](https://github.com/oscar6662)
 - Þórður Skúlason, ths261@hi.is, [DoddiSkula](https://github.com/DoddiSkula)
 
 

@@ -1,34 +1,26 @@
 /* eslint-disable camelcase */
 import { roundToNearestMinutes } from 'date-fns';
 import express from 'express';
+import cloudinary from 'cloudinary';
 import { query } from './db.js';
 import { checkUserIsAdmin } from './user.js';
 import { requireAuthentication } from './login.js';
 import {
-  insertRate, insertState, updateRate, updateState,
+  insertRate, insertState, updateRate, updateState, deleteRate, deleteState
 } from './tvuser.js';
 
 export const router = express.Router();
 
 /* FUNCTIONS */
-async function findShow(req, res) {
-  const show = 'SELECT show_name, show_description FROM shows WHERE id = $1';
-  const showq = await query(show, [req.params.id]);
-  const seasons = 'SELECT season_name, season_description FROM season WHERE show_id = $1';
-  const seasonsq = await query(seasons, [req.params.id]);
-
-  return res.json([showq.rows, seasonsq.rows]);
-}
 
 /* DELETEs */
-// skoða betur
 async function deleteShow(req, res) {
   const q = 'DELETE FROM shows WHERE id = $1';
   try {
     await query(q, [req.params.id]);
     return res.status(204).json(`Þætti nr: ${req.params.id} var eytt`);
   } catch (e) {
-    console.error('Could not find show or delete it.');
+    return res.status(400).json({ error: 'Could not delete Show' });
   }
 }
 
@@ -38,7 +30,7 @@ async function deleteSeason(req, res) {
     await query(q, [req.params.id, req.params.sid]);
     return res.status(204).json(`Season nr: ${req.params.sid} var eytt`);
   } catch (e) {
-    console.error('Could not find show or delete it.');
+    return res.status(400).json({ error: 'Could not delete Season' });
   }
 }
 
@@ -48,7 +40,7 @@ async function deleteEpisode(req, res) {
     await query(q, [req.params.id, req.params.sid, req.params.eid]);
     return res.status(204).json(`Þætti nr: ${req.params.eid} var eytt`);
   } catch (e) {
-    console.error('Could not find show or delete it.');
+    return res.status(400).json({ error: 'Could not delete Episode' });
   }
 }
 
@@ -58,7 +50,9 @@ async function insertShow(req, res) {
     name, aired, inproduction, tagline, image, show_description, show_language, network, webpage,
   } = req.body;
   const preQuery = 'SELECT MAX(id) FROM shows';
-  const id = preQuery + 1;
+  const id = await queryWNP(preQuery) + 1;
+
+  //Discuss how to deal with images...
   const q = 'INSERT INTO shows (id, show_name, show_aired, inproduction, tagline, image, show_description, show_language, network, webpage) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)';
   const r = await query(q, [id, name, aired, inproduction, tagline,
     image, show_description, show_language, network, webpage]);
@@ -133,8 +127,15 @@ router.get('/tv', async (req, res) => {
   return res.json(results.rows);
 });
 
-router.get('/tv/:id', findShow); // TODO: Ef notandi er innskráður skal sýna einkunn og stöðu viðkomandi á sjónvarpsþætti.
+router.get('/tv/:id', async (req, res) => {
+  const show = 'SELECT show_name, show_description FROM shows WHERE id = $1';
+  const showq = await query(show, [req.params.id]);
+  const seasons = 'SELECT season_name, season_description FROM season WHERE show_id = $1';
+  const seasonsq = await query(seasons, [req.params.id]);
 
+  return res.json([showq.rows, seasonsq.rows]);
+});
+  
 router.get('/tv/:id/season', async (req, res) => {
   const seasons = 'SELECT* FROM season WHERE show_id = $1';
   const seasonsq = await query(seasons, [req.params.id]);
@@ -167,17 +168,20 @@ router.get('/genres', async (req, res) => {
 
 /* POSTs */
 router.post('/tv', requireAuthentication, checkUserIsAdmin, insertShow);
-router.post('/tv/:id/season', checkUserIsAdmin, insertSeason);
-router.post('/tv/:id/season/:sid/episode', checkUserIsAdmin, insertEpisode);
-router.post('/genres', checkUserIsAdmin, insertGenre);
+router.post('/tv/:id/season', requireAuthentication, checkUserIsAdmin, insertSeason);
+router.post('/tv/:id/season/:sid/episode', requireAuthentication, checkUserIsAdmin, insertEpisode);
+router.post('/genres', requireAuthentication, checkUserIsAdmin, insertGenre);
 
 router.post('/tv/:id/rate', requireAuthentication, insertRate);
 router.post('/tv/:id/state', requireAuthentication, insertState);
 
 /* DELETEs */
-router.delete('/tv/:id/season/:sid', checkUserIsAdmin, deleteShow);
-router.delete('/tv/:id', checkUserIsAdmin, deleteSeason);
-router.delete('/tv/:id/season/:sid/episode/:eid', checkUserIsAdmin, deleteEpisode);
+router.delete('/tv/:id/season/:sid', requireAuthentication, checkUserIsAdmin, deleteShow);
+router.delete('/tv/:id', requireAuthentication, checkUserIsAdmin, deleteSeason);
+router.delete('/tv/:id/season/:sid/episode/:eid', requireAuthentication, checkUserIsAdmin, deleteEpisode);
+
+router.delete('/tv/:id/rate', requireAuthentication, deleteRate);
+router.delete('/tv/:id/state', requireAuthentication, deleteState);
 
 /* PATCHs */
 router.patch('/tv/:id', requireAuthentication, checkUserIsAdmin, updateShow);

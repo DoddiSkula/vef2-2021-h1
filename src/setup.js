@@ -81,7 +81,6 @@ async function show_genre(){
   .on( 'data', async (row) => {
     const g = row.genres.split(',')
     for (let x in genres.rows){
-      
       if (row.genres.includes(genres.rows[x].genre_name)){
         await query(`INSERT INTO show_genre (show_name, genre_name) VALUES ($1,$2)`, [row.name, genres.rows[x].genre_name]);
       }

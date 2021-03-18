@@ -1,12 +1,52 @@
 # Vefforritun 2, 2021, hópverkefni 1
 
-Útfæra skal vefþjónustur fyrir sjónvarpsþáttavef:
+Vefþjónusta fyrir sjónvarpsþáttavef:
 
-* Gefin eru/verða gögn fyrir sjónvarpsþætti, season og staka þætti sem flytja þarf inn í gagnagrunn
-* Hægt er að skoða öll gögn um sjónvarpsþætti án innskráningar
-* Notendaumsjón
-  * Stjórnendur sem geta breytt, bætt við, og eytt sjónvarpsþáttum, seasons og stökum þáttum
-  * Notendum sem geta skráð sína „stöðu“ fyrir sjónvarpsþátt, season og staka þætti
+* Gefin eru gögn fyrir sjónvarpsþætti, season og staka þætti.
+* Hægt er að skoða öll gögn um sjónvarpsþætti án innskráningar.
+* Notendaumsjón:
+  * Stjórnendur geta breytt, bætt við, og eytt sjónvarpsþáttum, seasons og stökum þáttum.
+  * Notendur geta skráð sína „stöðu“ fyrir sjónvarpsþátt, season og staka þætti.
+
+## Uppsetning
+
+1. Búa til gagnagrunn, t.d. `createdb vef2-2021-h1`.
+2. Búa til Cloudinary aðgang.
+3. Afrita `.env.example` í `.env ` og setja réttar upplýsingar fyrir gagnagrunn og Cloudinary.
+4. Keyra eftirfarandi skipanir:
+
+```
+npm install
+npm run test
+npm run setup
+npm run start
+```
+
+## Dæmi um köll í vefþjónustu
+
+TODO
+
+## Innskráning
+
+Til eru tveir fyrirfram skilgreindir notendur:
+
+- Stjórnandi með email `admin@admin.is` og lykilorð `12345678`.
+- Venjulegur notandi með email `notandi@notandi.is` og lykilorð `12345678`.
+
+Hægt að skrá sig inn með POST á `/users/login` og body:
+
+`{"email": "admin@admin.is", "password": "12345678"}`
+eða
+`{"email": "notandi@notandi.is", "password": "12345678"}`
+
+## Hópur
+
+- [Fullt nafn], [HÍ email], kak25
+- [Fullt nafn], [HÍ email], oscar6662
+- Þórður Skúlason, ths261@hi.is, [DoddiSkula](https://github.com/DoddiSkula)
+
+
+# Verklýsing (muna fjarlægja)
 
 ## Notendaumsjón
 
@@ -239,13 +279,3 @@ Sett verða fyrir 6 minni verkefni þar sem 5 bestu gilda 8% hvert, samtals 40% 
 
 Sett verða fyrir tvö hópverkefni þar sem hvort um sig gildir 10%, samtals 20% af lokaeinkunn.
 
----
-
-> Útgáfa 0.2
-
-|--------|--------|
-| Útgáfa | Lýsing |
-| 0.1    | _Fyrsta útgáfa_, ekki er búið að fullskilgreina vefþjónustuskil eða útbúa gögn í byrjun, stefnt á að verði komið 7.–8. febrúar. Nota skal tíma þangað til, til þess að finna hóp, skipta með sér verkum, ákveða samskipti, og skilgreina tímalínu fyrir vinnu á verkefninu. [Yfirferð í fyrirlestri 4](https://youtu.be/gQEFFKGumG0) |
-| 0.2    | Lýsing á gögnum, lýsing á þjónustum, mat, gögn |
-| 0.3    | Lagfæringar á lýsingu. Vísun á vefþjónustu sýnilausnar |
-|--------|--------|

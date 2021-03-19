@@ -4,7 +4,7 @@ import express from 'express';
 import cloudinary from 'cloudinary';
 import { query, queryWNP } from './db.js';
 import { checkUserIsAdmin } from './user.js';
-import { requireAuthentication } from './login.js';
+import { requireAuthentication, checkAuthentication } from './login.js';
 import {
   insertRate, insertState, updateRate, updateState, deleteRate, deleteState,
 } from './tvuser.js';
@@ -122,22 +122,34 @@ async function updateShow(req, res) {
 /* ROUTING */
 /* GETs */
 router.get('/tv', async (req, res) => {
-  const q = 'SELECT* FROM shows';
+  const q = 'SELECT* FROM shows ORDER BY id ASC';
   const results = await query(q);
   return res.json(results.rows);
 });
 
-router.get('/tv/:id', async (req, res) => {
-  const show = 'SELECT show_name, show_description FROM shows WHERE id = $1';
-  const showq = await query(show, [req.params.id]);
-  const seasons = 'SELECT season_name, season_description FROM season WHERE show_id = $1';
-  const seasonsq = await query(seasons, [req.params.id]);
+router.get('/tv/:id', checkAuthentication, async (req, res) => {
+  const { id } = req.params;
+
+  const show = 'SELECT id, show_name, show_description FROM shows WHERE id = $1';
+  const showq = await query(show, [id]);
+  const seasons = 'SELECT season_name, season_description FROM season WHERE show_id = $1 ORDER BY id ASC';
+  const seasonsq = await query(seasons, [id]);
+
+  if (req.user) {
+    const info = 'SELECT watch_state, rating FROM info WHERE show_id = $1 AND user_id = $2';
+    const infoq = await query(info, [id, req.user.id]);
+    if (!infoq.rows[0]) {
+      const emptyState = [{ watch_state: '', rating: '' }];
+      return res.json([showq.rows, emptyState, seasonsq.rows]);
+    }
+    return res.json([showq.rows, infoq.rows, seasonsq.rows]);
+  }
 
   return res.json([showq.rows, seasonsq.rows]);
 });
 
 router.get('/tv/:id/season', async (req, res) => {
-  const seasons = 'SELECT* FROM season WHERE show_id = $1';
+  const seasons = 'SELECT * FROM season WHERE show_id = $1';
   const seasonsq = await query(seasons, [req.params.id]);
 
   return res.json(seasonsq.rows);
@@ -146,7 +158,7 @@ router.get('/tv/:id/season', async (req, res) => {
 router.get('/tv/:id/season/:sid', async (req, res) => {
   const season = 'SELECT season_name, season_description FROM season WHERE show_id = $1';
   const seasonq = await query(season, [req.params.id]);
-  const episodes = 'SELECT* FROM episode WHERE show_id = $1 and season_id = $2';
+  const episodes = 'SELECT * FROM episode WHERE show_id = $1 and season_id = $2 ORDER BY nr ASC';
   const episodesq = await query(episodes, [req.params.id, req.params.sid]);
 
   return res.json([seasonq.rows, episodesq.rows]);

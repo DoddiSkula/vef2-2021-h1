@@ -97,9 +97,9 @@ async function genre() {
         if (!gen.includes(x[i])) gen.push(x[i]);
       }
     })
-    .on('end', () => {
+    .on('end', async () => {
       for (const x in gen) {
-        query('INSERT INTO genre (genre_name) VALUES ($1)', [gen[x]]);
+        await query('INSERT INTO genre (genre_name) VALUES ($1)', [gen[x]]);
       }
     });
 }
@@ -130,11 +130,11 @@ async function read() {
     console.error('Error creating schema', err);
   });
 
-  await genre().catch((err) => {
+  await insert().catch((err) => {
     console.error('Error creating schema', err);
   });
 
-  await insert().catch((err) => {
+  await genre().catch((err) => {
     console.error('Error creating schema', err);
   });
 

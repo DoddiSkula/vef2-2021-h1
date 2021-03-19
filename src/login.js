@@ -57,3 +57,23 @@ export function requireAuthentication(req, res, next) {
     },
   )(req, res, next);
 }
+
+export function checkAuthentication(req, res, next) {
+  return passport.authenticate(
+    'jwt',
+    { session: false },
+    (err, user) => {
+      if (err) {
+        return next(err);
+      }
+
+      if (!user) {
+        return next();
+      }
+
+      // Látum notanda vera aðgengilegan í rest af middlewares
+      req.user = user;
+      return next();
+    },
+  )(req, res, next);
+}

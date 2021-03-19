@@ -2,11 +2,11 @@
 import { roundToNearestMinutes } from 'date-fns';
 import express from 'express';
 import cloudinary from 'cloudinary';
-import { query } from './db.js';
+import { query, queryWNP } from './db.js';
 import { checkUserIsAdmin } from './user.js';
 import { requireAuthentication } from './login.js';
 import {
-  insertRate, insertState, updateRate, updateState, deleteRate, deleteState
+  insertRate, insertState, updateRate, updateState, deleteRate, deleteState,
 } from './tvuser.js';
 
 export const router = express.Router();
@@ -52,7 +52,7 @@ async function insertShow(req, res) {
   const preQuery = 'SELECT MAX(id) FROM shows';
   const id = await queryWNP(preQuery) + 1;
 
-  //Discuss how to deal with images...
+  // Discuss how to deal with images...
   const q = 'INSERT INTO shows (id, show_name, show_aired, inproduction, tagline, image, show_description, show_language, network, webpage) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)';
   const r = await query(q, [id, name, aired, inproduction, tagline,
     image, show_description, show_language, network, webpage]);
@@ -64,7 +64,7 @@ async function insertSeason(req, res) {
     name, nr, aired, description, poster,
   } = req.body;
   const q = 'INSERT INTO season (season_name, nr, season_aired, season_description, poster, show_id) VALUES ($1,$2,$3,$4,$5,$6)';
-  const r = await query(q, [name, nr, aired, description, poster, req.params.id ]);
+  const r = await query(q, [name, nr, aired, description, poster, req.params.id]);
   return res.json(r.rows);
 }
 
@@ -135,7 +135,7 @@ router.get('/tv/:id', async (req, res) => {
 
   return res.json([showq.rows, seasonsq.rows]);
 });
-  
+
 router.get('/tv/:id/season', async (req, res) => {
   const seasons = 'SELECT* FROM season WHERE show_id = $1';
   const seasonsq = await query(seasons, [req.params.id]);
@@ -146,8 +146,7 @@ router.get('/tv/:id/season', async (req, res) => {
 router.get('/tv/:id/season/:sid', async (req, res) => {
   const season = 'SELECT season_name, season_description FROM season WHERE show_id = $1';
   const seasonq = await query(season, [req.params.id]);
-  const episodes =
-    'SELECT* FROM episode WHERE show_id = $1 and season_id = $2';
+  const episodes = 'SELECT* FROM episode WHERE show_id = $1 and season_id = $2';
   const episodesq = await query(episodes, [req.params.id, req.params.sid]);
 
   return res.json([seasonq.rows, episodesq.rows]);

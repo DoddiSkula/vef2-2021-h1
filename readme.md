@@ -33,10 +33,12 @@ Til eru tveir fyrirfram skilgreindir notendur:
 - Stjórnandi með email `admin@admin.is` og lykilorð `12345678`.
 - Venjulegur notandi með email `notandi@notandi.is` og lykilorð `12345678`.
 
-Hægt að skrá sig inn með POST á `/users/login` og body:
+Hægt að skrá sig inn með POST á `/users/login` með body:
 
 `{"email": "admin@admin.is", "password": "12345678"}`
+
 eða
+
 `{"email": "notandi@notandi.is", "password": "12345678"}`
 
 ## Hópur

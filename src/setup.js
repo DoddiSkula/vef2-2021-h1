@@ -10,9 +10,9 @@ import csv from 'csv-parser';
 import { queryWNP, query } from './db.js';
 
 cloudinary.config({
-  cloud_name: 'oscar6662',
-  api_key: '643914147656538',
-  api_secret: 't1Q4jzJPmSWUxr_TZDJjEy8twAE',
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.API_KEY,
+  api_secret: process.env.API_SECRET,
 });
 
 const path = dirname(fileURLToPath(import.meta.url));

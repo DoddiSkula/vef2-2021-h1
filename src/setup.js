@@ -85,45 +85,38 @@ async function insert() {
     });
 }
 
-/* Populates genre table */
+/* Populates genre and show_genre table */
 async function genre() {
-  const gen = [];
+  let genres = [];
   fs.createReadStream(join(path, '../data/series.csv'))
     .pipe(csv())
     .on('data', (row) => {
       const x = row.genres.split(',');
       // eslint-disable-next-line no-restricted-syntax
       for (const i in x) {
-        if (!gen.includes(x[i])) gen.push(x[i]);
+        if (!genres.includes(x[i])) genres.push(x[i]);
       }
     })
     .on('end', async () => {
-      for (const x in gen) {
-        await query('INSERT INTO genre (genre_name) VALUES ($1)', [gen[x]]);
+      for (const x in genres) {
+        await query('INSERT INTO genre (genre_name) VALUES ($1)', [genres[x]]);
       }
+      fs.createReadStream(join(path, '../data/series.csv'))
+        .pipe(csv())
+        .on('data', async (row) => {
+          const x = row.genres.split(',');
+          for (const j in genres) {
+            if (x.includes(genres[j])) {
+              await query(
+                'INSERT INTO show_genre (show_name, genre_name) VALUES ($1,$2)',
+                [row.name, genres[j]]
+              );
+            }
+          }
+        });
     });
 }
 
-/* Populates show_genre table */
-async function show_genre() {
-  const genres = await queryWNP('SELECT * FROM genre');
-  const series = await queryWNP('SELECT id, show_name FROM shows');
-
-  fs.createReadStream(join(path, '../data/series.csv'))
-    .pipe(csv())
-    .on('data', async (row) => {
-      const g = row.genres.split(',');
-      for (const x in genres.rows) {
-        if (g.includes(genres.rows[x].genre_name)) {
-          await query(
-            'INSERT INTO show_genre (show_name, genre_name) VALUES ($1,$2)',
-            [row.name, genres.rows[x].genre_name]
-          );
-        }
-      }
-    })
-    .on('end', () => {});
-}
 
 async function read() {
   await create().catch((err) => {
@@ -135,10 +128,6 @@ async function read() {
   });
 
   await genre().catch((err) => {
-    console.error('Error creating schema', err);
-  });
-
-  await show_genre().catch((err) => {
     console.error('Error creating schema', err);
   });
 }

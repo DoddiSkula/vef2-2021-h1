@@ -1,5 +1,9 @@
 # Vefforritun 2, 2021, hópverkefni 1
 
+Heroku hlekkur: https://vefforritun2-h1.herokuapp.com/
+
+---
+
 Vefþjónusta fyrir sjónvarpsþáttavef:
 
 * Gefin eru gögn fyrir sjónvarpsþætti, season og staka þætti.
@@ -33,7 +37,7 @@ Til eru tveir fyrirfram skilgreindir notendur:
 - Stjórnandi með email `admin@admin.is` og lykilorð `12345678`.
 - Venjulegur notandi með email `notandi@notandi.is` og lykilorð `12345678`.
 
-Hægt að skrá sig inn með POST á `/users/login` með body:
+Hægt að skrá sig inn með `POST` á `/users/login` með body:
 
 `{"email": "admin@admin.is", "password": "12345678"}`
 
@@ -43,6 +47,6 @@ eða
 
 ## Hópur
 
-- Kári Kjærnested, kak25@hi.is, kak25
+- Kári Kjærnested, kak25@hi.is, [kak25](https://github.com/kak25)
 - Óskar Helgi Berenguer, ohb5@hi.is, [oscar6662](https://github.com/oscar6662)
 - Þórður Skúlason, ths261@hi.is, [DoddiSkula](https://github.com/DoddiSkula)

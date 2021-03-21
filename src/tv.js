@@ -1,13 +1,22 @@
 /* eslint-disable camelcase */
 import express from 'express';
 import { query, queryWNP } from './db.js';
+import { multer } from 'multer';
 import { checkUserIsAdmin } from './user.js';
+import { cloudinary} from 'cloudinary';
 import { requireAuthentication, checkAuthentication } from './login.js';
 import {
   insertRate, insertState, updateRate, updateState, deleteRate, deleteState,
 } from './tvuser.js';
 
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.API_KEY,
+  api_secret: process.env.API_SECRET,
+});
+
 export const router = express.Router();
+const upload = multer({ dest: 'data/img/' });
 
 /* FUNCTIONS */
 
@@ -45,15 +54,14 @@ async function deleteEpisode(req, res) {
 /* INSERTs */
 async function insertShow(req, res) {
   const {
-    name, aired, inproduction, tagline, image, show_description, show_language, network, webpage,
+    name, aired, inproduction, tagline, show_description, show_language, network, webpage,
   } = req.body;
+  cloudinary.uploader.upload(req.file);
   const preQuery = 'SELECT MAX(id) FROM shows';
   const id = await queryWNP(preQuery) + 1;
-
-  // Discuss how to deal with images...
   const q = 'INSERT INTO shows (id, show_name, show_aired, inproduction, tagline, image, show_description, show_language, network, webpage) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)';
   const r = await query(q, [id, name, aired, inproduction, tagline,
-    image, show_description, show_language, network, webpage]);
+    cloudinary.url(req.file), show_description, show_language, network, webpage]);
   return res.json(r.rows);
 }
 
@@ -291,7 +299,7 @@ router.post('/tv/:id/rate', requireAuthentication, insertRate);
 router.post('/tv/:id/state', requireAuthentication, insertState);
 
 /* DELETEs */
-router.delete('/tv/:id/season/:sid', requireAuthentication, checkUserIsAdmin, deleteShow);
+router.delete('/tv/:id/season/:sid', upload.single('image'), requireAuthentication, checkUserIsAdmin, deleteShow);
 router.delete('/tv/:id', requireAuthentication, checkUserIsAdmin, deleteSeason);
 router.delete('/tv/:id/season/:sid/episode/:eid', requireAuthentication, checkUserIsAdmin, deleteEpisode);
 

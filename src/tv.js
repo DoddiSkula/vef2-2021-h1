@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
 import express from 'express';
+import multer from 'multer';
+import { cloudinary } from 'cloudinary';
 import { query, queryWNP } from './db.js';
-import { multer } from 'multer';
 import { checkUserIsAdmin } from './user.js';
-import { cloudinary} from 'cloudinary';
 import { requireAuthentication, checkAuthentication } from './login.js';
 import {
   insertRate, insertState, updateRate, updateState, deleteRate, deleteState,

@@ -1,11 +1,7 @@
-/* eslint-disable import/no-duplicates */
-/* eslint-disable camelcase */
-/* eslint-disable no-param-reassign */
-import { promises } from 'fs';
+import fs, { promises } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import cloudinary from 'cloudinary';
-import fs from 'fs';
 import csv from 'csv-parser';
 import { queryWNP, query } from './db.js';
 
@@ -50,6 +46,7 @@ async function insert() {
   fs.createReadStream(join(path, '../data/seasons.csv'))
     .pipe(csv())
     .on('data', async (row) => {
+      // eslint-disable-next-line no-param-reassign
       if (row.airDate === '') row.airDate = null;
       await query(
         `INSERT INTO season (season_name, nr, season_aired, season_description, poster, show_id)
@@ -69,6 +66,7 @@ async function insert() {
   fs.createReadStream(join(path, '../data/episodes.csv'))
     .pipe(csv())
     .on('data', async (row) => {
+      // eslint-disable-next-line no-param-reassign
       if (row.airDate === '') { row.airDate = null; }
       await query(
         `INSERT INTO episode (episode_name, nr, episode_aired, episode_description, season_id, show_id)
@@ -87,7 +85,7 @@ async function insert() {
 
 /* Populates genre and show_genre table */
 async function genre() {
-  let genres = [];
+  const genres = [];
   fs.createReadStream(join(path, '../data/series.csv'))
     .pipe(csv())
     .on('data', (row) => {
@@ -98,25 +96,26 @@ async function genre() {
       }
     })
     .on('end', async () => {
-      for (const x in genres) {
+      for (const x in genres) { // eslint-disable-line
+        // eslint-disable-next-line no-await-in-loop
         await query('INSERT INTO genre (genre_name) VALUES ($1)', [genres[x]]);
       }
       fs.createReadStream(join(path, '../data/series.csv'))
         .pipe(csv())
         .on('data', async (row) => {
           const x = row.genres.split(',');
-          for (const j in genres) {
+          for (const j in genres) { // eslint-disable-line
             if (x.includes(genres[j])) {
+              // eslint-disable-next-line no-await-in-loop
               await query(
                 'INSERT INTO show_genre (show_name, genre_name) VALUES ($1,$2)',
-                [row.name, genres[j]]
+                [row.name, genres[j]],
               );
             }
           }
         });
     });
 }
-
 
 async function read() {
   await create().catch((err) => {

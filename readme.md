@@ -43,6 +43,6 @@ eða
 
 ## Hópur
 
-- Kári Kjærnsted, kak25@hi.is, kak25
+- Kári Kjærnested, kak25@hi.is, kak25
 - Óskar Helgi Berenguer, ohb5@hi.is, [oscar6662](https://github.com/oscar6662)
 - Þórður Skúlason, ths261@hi.is, [DoddiSkula](https://github.com/DoddiSkula)

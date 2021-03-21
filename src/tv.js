@@ -1,7 +1,5 @@
 /* eslint-disable camelcase */
-import { roundToNearestMinutes } from 'date-fns';
 import express from 'express';
-import cloudinary from 'cloudinary';
 import { query, queryWNP } from './db.js';
 import { checkUserIsAdmin } from './user.js';
 import { requireAuthentication, checkAuthentication } from './login.js';
@@ -121,60 +119,166 @@ async function updateShow(req, res) {
 
 /* ROUTING */
 /* GETs */
+
 router.get('/tv', async (req, res) => {
-  const q = 'SELECT* FROM shows ORDER BY id ASC';
-  const results = await query(q);
-  return res.json(results.rows);
+  const { offset = 0, limit = 10 } = req.query;
+  const output = { shows: {}, links: {} };
+
+  const q = 'SELECT * FROM shows ORDER BY id ASC OFFSET $1 LIMIT $2';
+  const results = await query(q, [offset, limit]);
+  output.shows = results.rows;
+
+  const countq = await query('SELECT COUNT(*) AS count FROM shows');
+  const { count } = countq.rows[0];
+  if (count <= limit) {
+    return res.json(output);
+  }
+  if (offset <= 0) {
+    output.links.next = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) + 10}&limit=10`;
+  } else if (Number(offset) + Number(limit) >= count) {
+    output.links.prev = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) - 10}&limit=10`;
+  } else {
+    output.links.prev = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) - 10}&limit=10`;
+    output.links.next = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) + 10}&limit=10`;
+  }
+
+  return res.json(output);
 });
 
 router.get('/tv/:id', checkAuthentication, async (req, res) => {
   const { id } = req.params;
+  const { offset = 0, limit = 10 } = req.query;
+  const output = {
+    show: {}, seasons: {}, links: {},
+  };
 
   const show = 'SELECT id, show_name, show_description FROM shows WHERE id = $1';
   const showq = await query(show, [id]);
-  const seasons = 'SELECT season_name, season_description FROM season WHERE show_id = $1 ORDER BY id ASC';
-  const seasonsq = await query(seasons, [id]);
+  output.show = showq.rows;
+  const seasons = 'SELECT season_name, season_description FROM season WHERE show_id = $1 ORDER BY id ASC OFFSET $2 LIMIT $3';
+  const seasonsq = await query(seasons, [id, offset, limit]);
+  output.seasons = seasonsq.rows;
+
+  const countq = await query('SELECT COUNT(*) AS count FROM season WHERE show_id = $1', [id]);
+  const { count } = countq.rows[0];
 
   if (req.user) {
     const info = 'SELECT watch_state, rating FROM info WHERE show_id = $1 AND user_id = $2';
     const infoq = await query(info, [id, req.user.id]);
     if (!infoq.rows[0]) {
-      const emptyState = [{ watch_state: '', rating: '' }];
-      return res.json([showq.rows, emptyState, seasonsq.rows]);
+      output.userInfo = { watch_state: '', rating: '' };
+    } else {
+      output.userInfo = infoq.rows;
     }
-    return res.json([showq.rows, infoq.rows, seasonsq.rows]);
   }
 
-  return res.json([showq.rows, seasonsq.rows]);
+  if (count <= limit) {
+    return res.json(output);
+  }
+
+  if (offset <= 0) {
+    output.links.next = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) + 10}&limit=10`;
+  } else if (Number(offset) + Number(limit) >= count) {
+    output.links.prev = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) - 10}&limit=10`;
+  } else {
+    output.links.prev = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) - 10}&limit=10`;
+    output.links.next = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) + 10}&limit=10`;
+  }
+
+  return res.json(output);
 });
 
 router.get('/tv/:id/season', async (req, res) => {
-  const seasons = 'SELECT * FROM season WHERE show_id = $1';
-  const seasonsq = await query(seasons, [req.params.id]);
+  const { id } = req.params;
+  const { offset = 0, limit = 10 } = req.query;
+  const output = { seasons: {}, links: {} };
 
-  return res.json(seasonsq.rows);
+  const seasons = 'SELECT * FROM season WHERE show_id = $1 ORDER BY nr ASC OFFSET $2 LIMIT $3';
+  const seasonsq = await query(seasons, [id, offset, limit]);
+  output.seasons = seasonsq.rows;
+
+  const countq = await query('SELECT COUNT(*) AS count FROM season WHERE show_id = $1', [id]);
+  const { count } = countq.rows[0];
+
+  if (count <= limit) {
+    return res.json(output);
+  }
+
+  if (offset <= 0) {
+    output.links.next = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) + 10}&limit=10`;
+  } else if (Number(offset) + Number(limit) >= count) {
+    output.links.prev = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) - 10}&limit=10`;
+  } else {
+    output.links.prev = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) - 10}&limit=10`;
+    output.links.next = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) + 10}&limit=10`;
+  }
+
+  return res.json(output);
 });
 
 router.get('/tv/:id/season/:sid', async (req, res) => {
-  const season = 'SELECT season_name, season_description FROM season WHERE show_id = $1';
-  const seasonq = await query(season, [req.params.id]);
-  const episodes = 'SELECT * FROM episode WHERE show_id = $1 and season_id = $2 ORDER BY nr ASC';
-  const episodesq = await query(episodes, [req.params.id, req.params.sid]);
+  const { id } = req.params;
+  const { sid } = req.params;
+  const { offset = 0, limit = 10 } = req.query;
+  const output = { season: {}, episodes: {}, links: {} };
 
-  return res.json([seasonq.rows, episodesq.rows]);
+  const season = 'SELECT * FROM season WHERE show_id = $1 AND nr = $2 ORDER BY nr ASC';
+  const seasonq = await query(season, [id, sid]);
+  output.season = seasonq.rows;
+  const episodes = 'SELECT * FROM episode WHERE show_id = $1 and season_id = $2 ORDER BY nr ASC OFFSET $3 LIMIT $4';
+  const episodesq = await query(episodes, [id, sid, offset, limit]);
+  output.episodes = episodesq.rows;
+
+  const countq = await query('SELECT COUNT(*) AS count FROM episode WHERE show_id = $1 and season_id = $2', [id, sid]);
+  const { count } = countq.rows[0];
+
+  if (count <= limit) {
+    return res.json(output);
+  }
+
+  if (offset <= 0) {
+    output.links.next = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) + 10}&limit=10`;
+  } else if (Number(offset) + Number(limit) >= count) {
+    output.links.prev = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) - 10}&limit=10`;
+  } else {
+    output.links.prev = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) - 10}&limit=10`;
+    output.links.next = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) + 10}&limit=10`;
+  }
+
+  return res.json(output);
 });
 
 router.get('/tv/:id/season/:sid/episode/:eid', async (req, res) => {
-  const episode = 'SELECT* FROM episode WHERE show_id = $1 and season_id = $2 and nr = $3';
+  const episode = 'SELECT * FROM episode WHERE show_id = $1 and season_id = $2 and nr = $3';
   const episodeq = await query(episode, [req.params.id, req.params.sid, req.params.eid]);
 
   return res.json(episodeq.rows);
 });
 
 router.get('/genres', async (req, res) => {
-  const q = 'SELECT genre_name FROM genre';
-  const results = await query(q);
-  return res.json(results.rows);
+  const { offset = 0, limit = 10 } = req.query;
+  const output = { genres: {}, links: {} };
+  const q = 'SELECT genre_name FROM genre ORDER BY id ASC OFFSET $1 LIMIT $2';
+  const results = await query(q, [offset, limit]);
+  output.genres = results.rows;
+
+  const countq = await query('SELECT COUNT(*) AS count FROM genre');
+  const { count } = countq.rows[0];
+
+  if (count <= limit) {
+    return res.json(output);
+  }
+
+  if (offset <= 0) {
+    output.links.next = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) + 10}&limit=10`;
+  } else if (Number(offset) + Number(limit) >= count) {
+    output.links.prev = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) - 10}&limit=10`;
+  } else {
+    output.links.prev = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) - 10}&limit=10`;
+    output.links.next = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) + 10}&limit=10`;
+  }
+
+  return res.json(output);
 });
 
 /* POSTs */

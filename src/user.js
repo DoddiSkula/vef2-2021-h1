@@ -57,9 +57,29 @@ export async function findById(id) {
 
 // TODO: útfæra paging
 export async function getUsers(req, res) {
-  const q = 'SELECT id, username, email, admin FROM users';
-  const results = await query(q);
-  return res.json(results.rows);
+  const { offset = 0, limit = 10 } = req.query;
+  const output = { users: {}, links: {} };
+
+  const q = 'SELECT id, username, email, admin FROM users ORDER BY id ASC OFFSET $1 LIMIT $2';
+  const results = await query(q, [offset, limit]);
+  output.users = results.rows;
+
+  // paging
+  const countq = await query('SELECT COUNT(*) AS count FROM users');
+  const { count } = countq.rows[0];
+  if (count <= limit) {
+    return res.json(output);
+  }
+  if (offset <= 0) {
+    output.links.next = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) + 10}&limit=10`;
+  } else if (offset >= count) {
+    output.links.prev = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) - 10}&limit=10`;
+  } else {
+    output.links.prev = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) - 10}&limit=10`;
+    output.links.next = `${req.protocol}://${req.get('host')}${req.path}?offset=${Number(offset) + 10}&limit=10`;
+  }
+
+  return res.json(output);
 }
 
 export async function getUser(username) {

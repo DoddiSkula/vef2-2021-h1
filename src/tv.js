@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import express from 'express';
 import multer from 'multer';
-import { cloudinary } from 'cloudinary';
+import cloudinary from 'cloudinary';
 import { query, queryWNP } from './db.js';
 import { checkUserIsAdmin } from './user.js';
 import { requireAuthentication, checkAuthentication } from './login.js';
@@ -157,12 +157,17 @@ router.get('/tv/:id', checkAuthentication, async (req, res) => {
   const { id } = req.params;
   const { offset = 0, limit = 10 } = req.query;
   const output = {
-    show: {}, seasons: {}, links: {},
+    show: {}, genres: {}, seasons: {}, links: {},
   };
 
-  const show = 'SELECT id, show_name, show_description FROM shows WHERE id = $1';
+  const show = 'SELECT * FROM shows WHERE id = $1';
   const showq = await query(show, [id]);
   output.show = showq.rows;
+
+  const genres = 'SELECT genre_name FROM show_genre WHERE show_name = $1';
+  const genresq = await query(genres, [showq.rows[0].show_name]);
+  output.genres = genresq.rows;
+
   const seasons = 'SELECT season_name, season_description FROM season WHERE show_id = $1 ORDER BY id ASC OFFSET $2 LIMIT $3';
   const seasonsq = await query(seasons, [id, offset, limit]);
   output.seasons = seasonsq.rows;

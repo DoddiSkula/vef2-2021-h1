@@ -67,10 +67,12 @@ async function insertShow(req, res) {
 
 async function insertSeason(req, res) {
   const {
-    name, nr, aired, description, poster,
+    name, nr, aired, description,
   } = req.body;
+
+  cloudinary.uploader.upload(req.file);
   const q = 'INSERT INTO season (season_name, nr, season_aired, season_description, poster, show_id) VALUES ($1,$2,$3,$4,$5,$6)';
-  const r = await query(q, [name, nr, aired, description, poster, req.params.id]);
+  const r = await query(q, [name, nr, aired, description, cloudinary.url(req.file), req.params.id]);
   return res.json(r.rows);
 }
 
@@ -96,9 +98,12 @@ async function updateShow(req, res) {
 
   const {
     show_name = null, show_aired = null, inproduction = null,
-    tagline = null, image = null, show_description = null,
+    tagline = null, show_description = null,
     show_language = null, network = null, webpage = null,
   } = req.body;
+
+  cloudinary.uploader.upload(req.file);
+  const {image = null} = cloudinary.url(req.file);
 
   const values = [];
   values.push({ column: 'show_name', val: show_name }, { column: 'show_aired', val: show_aired }, { column: 'inproduction', val: inproduction },
@@ -295,8 +300,8 @@ router.get('/genres', async (req, res) => {
 });
 
 /* POSTs */
-router.post('/tv', requireAuthentication, checkUserIsAdmin, insertShow);
-router.post('/tv/:id/season', requireAuthentication, checkUserIsAdmin, insertSeason);
+router.post('/tv', upload.single('image'), requireAuthentication, checkUserIsAdmin, insertShow);
+router.post('/tv/:id/season', upload.single('image'), requireAuthentication, checkUserIsAdmin, insertSeason);
 router.post('/tv/:id/season/:sid/episode', requireAuthentication, checkUserIsAdmin, insertEpisode);
 router.post('/genres', requireAuthentication, checkUserIsAdmin, insertGenre);
 
@@ -304,7 +309,7 @@ router.post('/tv/:id/rate', requireAuthentication, insertRate);
 router.post('/tv/:id/state', requireAuthentication, insertState);
 
 /* DELETEs */
-router.delete('/tv/:id/season/:sid', upload.single('image'), requireAuthentication, checkUserIsAdmin, deleteShow);
+router.delete('/tv/:id/season/:sid', requireAuthentication, checkUserIsAdmin, deleteShow);
 router.delete('/tv/:id', requireAuthentication, checkUserIsAdmin, deleteSeason);
 router.delete('/tv/:id/season/:sid/episode/:eid', requireAuthentication, checkUserIsAdmin, deleteEpisode);
 
@@ -312,6 +317,6 @@ router.delete('/tv/:id/rate', requireAuthentication, deleteRate);
 router.delete('/tv/:id/state', requireAuthentication, deleteState);
 
 /* PATCHs */
-router.patch('/tv/:id', requireAuthentication, checkUserIsAdmin, updateShow);
+router.patch('/tv/:id', upload.single('image'), requireAuthentication, checkUserIsAdmin, updateShow);
 router.patch('/tv/:id/rate', requireAuthentication, updateRate);
 router.patch('/tv/:id/state', requireAuthentication, updateState);

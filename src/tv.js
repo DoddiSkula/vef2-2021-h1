@@ -103,7 +103,7 @@ async function updateShow(req, res) {
   } = req.body;
 
   cloudinary.uploader.upload(req.file);
-  const {image = null} = cloudinary.url(req.file);
+  const { image = null } = cloudinary.url(req.file);
 
   const values = [];
   values.push({ column: 'show_name', val: show_name }, { column: 'show_aired', val: show_aired }, { column: 'inproduction', val: inproduction },
